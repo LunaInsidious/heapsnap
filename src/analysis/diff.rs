@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::Serialize;
 
-use crate::analysis::summary::{summarize, SummaryOptions, SummaryRow};
+use crate::analysis::summary::{SummaryOptions, SummaryRow, summarize};
 use crate::error::SnapshotError;
 use crate::snapshot::SnapshotRaw;
 
@@ -53,11 +53,7 @@ pub fn diff_summaries(
     let map_a = map_by_name(&summary_a.rows);
     let map_b = map_by_name(&summary_b.rows);
 
-    let mut names: Vec<String> = map_a
-        .keys()
-        .chain(map_b.keys())
-        .cloned()
-        .collect();
+    let mut names: Vec<String> = map_a.keys().chain(map_b.keys()).cloned().collect();
     names.sort();
     names.dedup();
 
@@ -106,10 +102,15 @@ pub fn diff_summaries(
 
 fn map_by_name(rows: &[SummaryRow]) -> HashMap<String, SummaryRow> {
     rows.iter()
-        .map(|row| (row.name.clone(), SummaryRow {
-            name: row.name.clone(),
-            count: row.count,
-            self_size_sum: row.self_size_sum,
-        }))
+        .map(|row| {
+            (
+                row.name.clone(),
+                SummaryRow {
+                    name: row.name.clone(),
+                    count: row.count,
+                    self_size_sum: row.self_size_sum,
+                },
+            )
+        })
         .collect()
 }

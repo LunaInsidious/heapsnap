@@ -66,7 +66,10 @@ pub fn format_markdown(snapshot: &SnapshotRaw, result: &RetainersResult) -> Stri
     output
 }
 
-pub fn format_json(snapshot: &SnapshotRaw, result: &RetainersResult) -> Result<String, SnapshotError> {
+pub fn format_json(
+    snapshot: &SnapshotRaw,
+    result: &RetainersResult,
+) -> Result<String, SnapshotError> {
     let target = node_json(snapshot, result.target);
     let mut paths = Vec::new();
     for path in &result.paths {
@@ -163,9 +166,7 @@ fn escape_inline_with_details(value: &str) -> String {
     let summary = truncate_chars(&normalized, MAX_LEN);
     let summary = escape_html_inline(&summary);
     let full = escape_html_inline(&normalized);
-    format!(
-        "<details><summary>{summary}…</summary><div>{full}</div></details>"
-    )
+    format!("<details><summary>{summary}…</summary><div>{full}</div></details>")
 }
 
 fn escape_inline(value: &str) -> String {

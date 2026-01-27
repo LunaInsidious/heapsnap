@@ -26,7 +26,10 @@ pub fn format_markdown(snapshot: &SnapshotRaw, result: &DominatorResult) -> Stri
     let target = snapshot.node_view(result.target);
     let target_name = target.and_then(|node| node.name()).unwrap_or("<unknown>");
     let target_id = target.and_then(|node| node.id()).unwrap_or(-1);
-    let _ = writeln!(output, "- Dominator chain for {target_name} (id={target_id})");
+    let _ = writeln!(
+        output,
+        "- Dominator chain for {target_name} (id={target_id})"
+    );
     for (idx, node_index) in result.chain.iter().enumerate() {
         let node = snapshot.node_view(*node_index);
         let name = node.and_then(|value| value.name()).unwrap_or("<unknown>");
@@ -36,7 +39,10 @@ pub fn format_markdown(snapshot: &SnapshotRaw, result: &DominatorResult) -> Stri
     output
 }
 
-pub fn format_json(snapshot: &SnapshotRaw, result: &DominatorResult) -> Result<String, SnapshotError> {
+pub fn format_json(
+    snapshot: &SnapshotRaw,
+    result: &DominatorResult,
+) -> Result<String, SnapshotError> {
     let payload = DominatorJson {
         version: 1,
         target: node_json(snapshot, result.target),

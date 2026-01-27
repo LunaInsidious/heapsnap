@@ -52,8 +52,8 @@ struct SnapshotVisitor {
 impl SnapshotVisitor {
     fn into_snapshot(self) -> Result<SnapshotRaw, SnapshotError> {
         let meta = self.meta.ok_or_else(|| SnapshotError::InvalidData {
-            details:
-                "missing snapshot.meta (ensure the file is a Chrome DevTools heapsnapshot)".to_string(),
+            details: "missing snapshot.meta (ensure the file is a Chrome DevTools heapsnapshot)"
+                .to_string(),
         })?;
         let index = meta.validate()?;
 

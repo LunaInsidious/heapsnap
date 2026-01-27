@@ -57,16 +57,20 @@ pub fn dominator_chain(
     })
 }
 
-fn build_graph(snapshot: &SnapshotRaw) -> Result<(Vec<Vec<usize>>, Vec<Vec<usize>>), SnapshotError> {
+fn build_graph(
+    snapshot: &SnapshotRaw,
+) -> Result<(Vec<Vec<usize>>, Vec<Vec<usize>>), SnapshotError> {
     let node_count = snapshot.node_count();
     let mut succs = vec![Vec::new(); node_count];
     let mut preds = vec![Vec::new(); node_count];
 
     let edge_offsets = compute_edge_offsets(snapshot)?;
     for (node_index, start_edge) in edge_offsets.iter().enumerate() {
-        let node = snapshot.node_view(node_index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {node_index}"),
-        })?;
+        let node = snapshot
+            .node_view(node_index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {node_index}"),
+            })?;
         let edge_count = node.edge_count().unwrap_or(0);
         let edge_count = usize::try_from(edge_count).map_err(|_| SnapshotError::InvalidData {
             details: format!("edge_count negative at node {node_index}"),
@@ -74,9 +78,12 @@ fn build_graph(snapshot: &SnapshotRaw) -> Result<(Vec<Vec<usize>>, Vec<Vec<usize
 
         for offset in 0..edge_count {
             let edge_index = start_edge + offset;
-            let edge = snapshot.edge_view(edge_index).ok_or_else(|| SnapshotError::InvalidData {
-                details: format!("edge index out of range: {edge_index}"),
-            })?;
+            let edge =
+                snapshot
+                    .edge_view(edge_index)
+                    .ok_or_else(|| SnapshotError::InvalidData {
+                        details: format!("edge index out of range: {edge_index}"),
+                    })?;
             let to_node = match edge.to_node_index() {
                 Some(value) => value,
                 None => continue,
@@ -201,9 +208,11 @@ fn compute_edge_offsets(snapshot: &SnapshotRaw) -> Result<Vec<usize>, SnapshotEr
 
     for node_index in 0..snapshot.node_count() {
         offsets.push(cursor);
-        let node = snapshot.node_view(node_index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {node_index}"),
-        })?;
+        let node = snapshot
+            .node_view(node_index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {node_index}"),
+            })?;
         let edge_count = node.edge_count().unwrap_or(0);
         let edge_count = usize::try_from(edge_count).map_err(|_| SnapshotError::InvalidData {
             details: format!("edge_count negative at node {node_index}"),
@@ -228,7 +237,7 @@ fn compute_edge_offsets(snapshot: &SnapshotRaw) -> Result<Vec<usize>, SnapshotEr
 mod tests {
     use super::*;
     use crate::analysis::retainers::find_target_by_id;
-    use crate::parser::{read_snapshot_file, ReadOptions};
+    use crate::parser::{ReadOptions, read_snapshot_file};
     use std::path::Path;
 
     #[test]

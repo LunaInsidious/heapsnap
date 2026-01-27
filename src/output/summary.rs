@@ -76,9 +76,7 @@ fn escape_table_cell(value: &str) -> String {
     let summary = truncate_chars(&normalized, MAX_LEN);
     let summary = escape_html_inline(&summary);
     let full = escape_html_inline(&normalized);
-    format!(
-        "<details><summary>{summary}…</summary><div>{full}</div></details>"
-    )
+    format!("<details><summary>{summary}…</summary><div>{full}</div></details>")
 }
 
 fn escape_table_inline(value: &str) -> String {

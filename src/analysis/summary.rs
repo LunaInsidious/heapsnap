@@ -33,20 +33,25 @@ pub struct EmptyTypeSummary {
     pub self_size_sum: i64,
 }
 
-pub fn summarize(snapshot: &SnapshotRaw, options: SummaryOptions) -> Result<SummaryResult, SnapshotError> {
+pub fn summarize(
+    snapshot: &SnapshotRaw,
+    options: SummaryOptions,
+) -> Result<SummaryResult, SnapshotError> {
     let mut map: HashMap<usize, SummaryRow> = HashMap::new();
     let mut empty_types: HashMap<String, EmptyTypeSummary> = HashMap::new();
 
     for index in 0..snapshot.node_count() {
-        let node = snapshot.node_view(index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {index}"),
-        })?;
+        let node = snapshot
+            .node_view(index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {index}"),
+            })?;
         let name_index = match node.name_index() {
             Some(value) => value,
             None => {
                 return Err(SnapshotError::InvalidData {
                     details: format!("node missing name index: {index}"),
-                })
+                });
             }
         };
 
@@ -74,13 +79,14 @@ pub fn summarize(snapshot: &SnapshotRaw, options: SummaryOptions) -> Result<Summ
 
         if name.is_empty() {
             let node_type = node.node_type().unwrap_or("unknown");
-            let type_entry = empty_types
-                .entry(node_type.to_string())
-                .or_insert_with(|| EmptyTypeSummary {
-                    node_type: node_type.to_string(),
-                    count: 0,
-                    self_size_sum: 0,
-                });
+            let type_entry =
+                empty_types
+                    .entry(node_type.to_string())
+                    .or_insert_with(|| EmptyTypeSummary {
+                        node_type: node_type.to_string(),
+                        count: 0,
+                        self_size_sum: 0,
+                    });
             type_entry.count += 1;
             type_entry.self_size_sum += node.self_size().unwrap_or(0);
         }
@@ -151,7 +157,7 @@ mod tests {
             nodes: vec![
                 0, 0, 1, 10, 0, // node 0: name index 0
                 0, 1, 2, 20, 0, // node 1: name index 1
-                0, 0, 3, 5, 0,  // node 2: name index 0
+                0, 0, 3, 5, 0, // node 2: name index 0
             ],
             edges: vec![],
             strings: vec!["Foo".to_string(), "Bar".to_string()],

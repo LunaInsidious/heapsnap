@@ -17,21 +17,16 @@ pub fn write_atomic(path: &Path, content: &str) -> Result<(), SnapshotError> {
 
 fn write_file(path: &Path, content: &str) -> Result<(), SnapshotError> {
     let mut file = File::create(path).map_err(SnapshotError::Io)?;
-    file.write_all(content.as_bytes()).map_err(SnapshotError::Io)?;
+    file.write_all(content.as_bytes())
+        .map_err(SnapshotError::Io)?;
     file.sync_all().map_err(SnapshotError::Io)?;
     Ok(())
 }
 
 fn temp_path(path: &Path) -> PathBuf {
     let mut temp = path.to_path_buf();
-    let suffix = format!(
-        ".tmp-{}",
-        std::process::id()
-    );
-    let mut filename = path
-        .file_name()
-        .unwrap_or_default()
-        .to_os_string();
+    let suffix = format!(".tmp-{}", std::process::id());
+    let mut filename = path.file_name().unwrap_or_default().to_os_string();
     filename.push(&suffix);
     temp.set_file_name(filename);
     temp

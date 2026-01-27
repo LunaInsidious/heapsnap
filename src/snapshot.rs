@@ -94,7 +94,7 @@ impl SnapshotMeta {
                         "node_types[{}] expected array, got string ({value})",
                         node_field_index.type_idx
                     ),
-                })
+                });
             }
         };
 
@@ -106,7 +106,7 @@ impl SnapshotMeta {
                         "edge_types[{}] expected array, got string ({value})",
                         edge_field_index.type_idx
                     ),
-                })
+                });
             }
         };
 

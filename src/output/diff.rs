@@ -55,7 +55,9 @@ pub fn format_json(result: &DiffResult) -> Result<String, SnapshotError> {
 
 pub fn format_csv(result: &DiffResult) -> String {
     let mut output = String::new();
-    output.push_str("constructor,count_a,count_b,count_delta,self_size_a,self_size_b,self_size_delta\n");
+    output.push_str(
+        "constructor,count_a,count_b,count_delta,self_size_a,self_size_b,self_size_delta\n",
+    );
     for row in &result.rows {
         output.push('"');
         output.push_str(&row.name.replace('"', "\"\""));

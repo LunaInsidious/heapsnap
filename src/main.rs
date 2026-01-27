@@ -308,7 +308,7 @@ fn run_retainers(
         OutputFormat::Csv => {
             return Err(error::SnapshotError::InvalidData {
                 details: "retainers output does not support csv".to_string(),
-            })
+            });
         }
     };
 
@@ -502,7 +502,7 @@ fn run_dominator(
         OutputFormat::Csv => {
             return Err(error::SnapshotError::InvalidData {
                 details: "dominator output does not support csv".to_string(),
-            })
+            });
         }
     };
 
@@ -549,25 +549,15 @@ mod tests {
 
     #[test]
     fn help_parsing_retainers() {
-        let args = Cli::try_parse_from([
-            "heapsnap",
-            "retainers",
-            "input.heapsnapshot",
-            "--id",
-            "123",
-        ]);
+        let args =
+            Cli::try_parse_from(["heapsnap", "retainers", "input.heapsnapshot", "--id", "123"]);
         assert!(args.is_ok());
     }
 
     #[test]
     fn help_parsing_build() {
-        let args = Cli::try_parse_from([
-            "heapsnap",
-            "build",
-            "input.heapsnapshot",
-            "--outdir",
-            "out",
-        ]);
+        let args =
+            Cli::try_parse_from(["heapsnap", "build", "input.heapsnapshot", "--outdir", "out"]);
         assert!(args.is_ok());
     }
 
@@ -586,13 +576,8 @@ mod tests {
 
     #[test]
     fn help_parsing_dominator() {
-        let args = Cli::try_parse_from([
-            "heapsnap",
-            "dominator",
-            "input.heapsnapshot",
-            "--id",
-            "123",
-        ]);
+        let args =
+            Cli::try_parse_from(["heapsnap", "dominator", "input.heapsnapshot", "--id", "123"]);
         assert!(args.is_ok());
     }
 }

@@ -25,14 +25,13 @@ pub struct RetainersResult {
     pub paths: Vec<Vec<RetainerLink>>,
 }
 
-pub fn find_target_by_id(
-    snapshot: &SnapshotRaw,
-    node_id: u64,
-) -> Result<usize, SnapshotError> {
+pub fn find_target_by_id(snapshot: &SnapshotRaw, node_id: u64) -> Result<usize, SnapshotError> {
     for index in 0..snapshot.node_count() {
-        let node = snapshot.node_view(index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {index}"),
-        })?;
+        let node = snapshot
+            .node_view(index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {index}"),
+            })?;
         if node.id() == Some(node_id as i64) {
             return Ok(index);
         }
@@ -52,9 +51,11 @@ pub fn find_target_by_name(
     let mut candidates: HashMap<String, NameCandidate> = HashMap::new();
 
     for index in 0..snapshot.node_count() {
-        let node = snapshot.node_view(index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {index}"),
-        })?;
+        let node = snapshot
+            .node_view(index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {index}"),
+            })?;
         let name = node.name().unwrap_or("<unknown>");
         if !name.contains(name_filter) {
             continue;
@@ -190,9 +191,11 @@ pub fn find_retaining_paths(
 pub fn find_roots(snapshot: &SnapshotRaw) -> Result<Vec<usize>, SnapshotError> {
     let mut roots = Vec::new();
     for index in 0..snapshot.node_count() {
-        let node = snapshot.node_view(index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {index}"),
-        })?;
+        let node = snapshot
+            .node_view(index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {index}"),
+            })?;
         if is_gc_root(&node) {
             roots.push(index);
         }
@@ -244,17 +247,23 @@ impl<'a> IncomingIndex<'a> {
         }
 
         for (node_index, start_edge) in self.edge_offsets.iter().enumerate() {
-            let node = self.snapshot.node_view(node_index).ok_or_else(|| SnapshotError::InvalidData {
-                details: format!("node index out of range: {node_index}"),
-            })?;
+            let node =
+                self.snapshot
+                    .node_view(node_index)
+                    .ok_or_else(|| SnapshotError::InvalidData {
+                        details: format!("node index out of range: {node_index}"),
+                    })?;
             let edge_count = node.edge_count().unwrap_or(0);
-            let edge_count = usize::try_from(edge_count).map_err(|_| SnapshotError::InvalidData {
-                details: format!("edge_count negative at node {node_index}"),
-            })?;
+            let edge_count =
+                usize::try_from(edge_count).map_err(|_| SnapshotError::InvalidData {
+                    details: format!("edge_count negative at node {node_index}"),
+                })?;
             for offset in 0..edge_count {
                 let edge_index = start_edge + offset;
-                let edge = self.snapshot.edge_view(edge_index).ok_or_else(|| SnapshotError::InvalidData {
-                    details: format!("edge index out of range: {edge_index}"),
+                let edge = self.snapshot.edge_view(edge_index).ok_or_else(|| {
+                    SnapshotError::InvalidData {
+                        details: format!("edge index out of range: {edge_index}"),
+                    }
                 })?;
                 let to_node = match edge.to_node_index() {
                     Some(value) => value,
@@ -293,9 +302,11 @@ fn compute_edge_offsets(snapshot: &SnapshotRaw) -> Result<Vec<usize>, SnapshotEr
 
     for node_index in 0..snapshot.node_count() {
         offsets.push(cursor);
-        let node = snapshot.node_view(node_index).ok_or_else(|| SnapshotError::InvalidData {
-            details: format!("node index out of range: {node_index}"),
-        })?;
+        let node = snapshot
+            .node_view(node_index)
+            .ok_or_else(|| SnapshotError::InvalidData {
+                details: format!("node index out of range: {node_index}"),
+            })?;
         let edge_count = node.edge_count().unwrap_or(0);
         let edge_count = usize::try_from(edge_count).map_err(|_| SnapshotError::InvalidData {
             details: format!("edge_count negative at node {node_index}"),

@@ -1,10 +1,8 @@
 use std::path::Path;
 
-use heapsnap::analysis::retainers::{
-    find_retaining_paths, find_target_by_id, RetainersOptions,
-};
+use heapsnap::analysis::retainers::{RetainersOptions, find_retaining_paths, find_target_by_id};
 use heapsnap::cancel::CancelToken;
-use heapsnap::parser::{read_snapshot_file, ReadOptions};
+use heapsnap::parser::{ReadOptions, read_snapshot_file};
 
 #[test]
 fn retainers_paths_fixture_small() {
@@ -48,5 +46,8 @@ fn retainers_cancelled() {
         },
     );
 
-    assert!(matches!(result, Err(heapsnap::error::SnapshotError::Cancelled)));
+    assert!(matches!(
+        result,
+        Err(heapsnap::error::SnapshotError::Cancelled)
+    ));
 }

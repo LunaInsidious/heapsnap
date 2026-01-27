@@ -1,9 +1,9 @@
 use std::path::Path;
 
-use heapsnap::analysis::summary::{summarize, SummaryOptions};
+use heapsnap::analysis::summary::{SummaryOptions, summarize};
 use heapsnap::cancel::CancelToken;
 use heapsnap::output::summary as summary_output;
-use heapsnap::parser::{read_snapshot_file, ReadOptions};
+use heapsnap::parser::{ReadOptions, read_snapshot_file};
 
 #[test]
 fn summary_json_fixture_small() {
