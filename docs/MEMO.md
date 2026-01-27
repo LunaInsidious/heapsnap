@@ -39,3 +39,78 @@
 
 ---
 
+## 2026-01-27: heapsnapshot meta の前提メモ
+
+### 背景
+meta の構造は Chrome バージョンで変化する可能性があり、
+最小限の前提だけでパースする必要がある。
+
+### 内容 / 観察結果
+- `node_fields` / `edge_fields` に最低限必要なキーを要求する前提で実装している
+- `node_types` / `edge_types` は `*_fields` と同じ長さである想定
+- `type` フィールドの `*_types` が配列である想定（型名の一覧を参照するため）
+
+※ 未確認事項: 実データで `type` 以外の `*_types` が配列になるケース。
+
+### 気になる点 / TODO
+- 実データを観察して `node_fields` / `edge_fields` の必須集合を調整する可能性
+
+### 備考
+- 関連コード: `src/snapshot.rs`, `src/parser.rs`
+
+---
+
+## 2026-01-27: Retainers のルート判定と name マッチ方針
+
+### 背景
+retainers 探索では GC Root を特定する必要があるが、
+heapsnapshot の実データにばらつきがあり得る。
+
+### 内容 / 観察結果
+- `GC roots` という名前を持つノードを root として扱う前提で実装
+- 見つからない場合は node index 0 を暫定 root として扱う
+- `--name` は部分一致として候補を集計し、`--pick` で constructor を選択する
+
+※ 未確認事項: 実データで `GC roots` が存在しないケースの頻度。
+
+### 気になる点 / TODO
+- 実データを観察して root 判定ロジックを調整する可能性
+
+### 備考
+- 関連コード: `src/analysis/retainers.rs`
+
+---
+
+## 2026-01-27: JSON 文字列の不正なサロゲート対策
+
+### 背景
+実データの heapsnapshot に、JSON としては不正な
+`\\uD800` などの単独サロゲートが含まれるケースがあった。
+
+### 内容 / 観察結果
+- `serde_json` は単独サロゲートをエラーとして扱う
+- Lenient な変換で `\\uFFFD` に置換するとパース可能になる
+
+### 気になる点 / TODO
+- 変換が許容されるかどうかは実データで確認が必要
+
+### 備考
+- 関連コード: `src/lenient.rs`, `src/parser.rs`
+
+---
+
+## 2026-01-27: Markdown 出力の長文省略と展開
+
+### 背景
+constructor 名や edge 名に長いコード断片が含まれると
+Markdown テーブルやリストの可読性が落ちる。
+
+### 内容 / 観察結果
+- Markdown 出力では一定長以上の文字列を省略し、`<details>` で展開可能にした
+- 省略はデフォルトで有効
+
+### 気になる点 / TODO
+- 省略長の調整や CLI オプション化を検討する余地がある
+
+### 備考
+- 関連コード: `src/output/summary.rs`, `src/output/retainers.rs`
