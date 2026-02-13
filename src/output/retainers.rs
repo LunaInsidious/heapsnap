@@ -91,6 +91,41 @@ pub fn format_json(
     serde_json::to_string_pretty(&payload).map_err(SnapshotError::Json)
 }
 
+pub fn format_html(snapshot: &SnapshotRaw, result: &RetainersResult) -> String {
+    let mut output = String::new();
+    let title = "HeapSnapshot Retainers";
+    let target = snapshot.node_view(result.target);
+    let target_name = target
+        .and_then(|node| node.name())
+        .map(escape_html_inline)
+        .unwrap_or_else(|| "<unknown>".to_string());
+    let target_id = target.and_then(|node| node.id()).unwrap_or(-1);
+
+    let _ = writeln!(
+        output,
+        "<!doctype html><html><head><meta charset=\"utf-8\"><title>{title}</title><style>{}</style></head><body>",
+        base_styles()
+    );
+    let _ = writeln!(
+        output,
+        "<h1>{title}</h1><p><strong>Target:</strong> {} (id={})</p>",
+        target_name, target_id
+    );
+
+    for (index, path) in result.paths.iter().enumerate() {
+        let _ = writeln!(output, "<h2>Path #{}</h2>", index + 1);
+        let _ = writeln!(output, "<ol>");
+        for step in path {
+            let line = format_step(snapshot, step);
+            let _ = writeln!(output, "<li>{line}</li>");
+        }
+        let _ = writeln!(output, "</ol>");
+    }
+
+    let _ = writeln!(output, "</body></html>");
+    output
+}
+
 fn node_json(snapshot: &SnapshotRaw, node_index: usize) -> NodeJson {
     let node = snapshot.node_view(node_index);
     NodeJson {
@@ -251,4 +286,8 @@ fn escape_html_inline(value: &str) -> String {
     escaped = escaped.replace('\r', "");
     escaped = escaped.replace('\n', "<br>");
     escaped
+}
+
+fn base_styles() -> &'static str {
+    "body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px;color:#111}h2{margin-top:20px}ol{padding-left:20px}li{margin:6px 0}"
 }

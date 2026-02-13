@@ -185,4 +185,36 @@ mod tests {
         assert_eq!(result.rows[1].name, "Foo");
         assert_eq!(result.rows[1].count, 2);
     }
+
+    #[test]
+    fn summarize_contains_filter_matches_partial() {
+        let snapshot = minimal_snapshot();
+        let result = summarize(
+            &snapshot,
+            SummaryOptions {
+                top: 10,
+                contains: Some("Fo".to_string()),
+            },
+        )
+        .expect("summary");
+
+        assert_eq!(result.rows.len(), 1);
+        assert_eq!(result.rows[0].name, "Foo");
+        assert_eq!(result.rows[0].count, 2);
+    }
+
+    #[test]
+    fn summarize_contains_filter_is_case_sensitive() {
+        let snapshot = minimal_snapshot();
+        let result = summarize(
+            &snapshot,
+            SummaryOptions {
+                top: 10,
+                contains: Some("foo".to_string()),
+            },
+        )
+        .expect("summary");
+
+        assert!(result.rows.is_empty());
+    }
 }

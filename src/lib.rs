@@ -5,4 +5,5 @@ pub mod lenient;
 pub mod output;
 pub mod parser;
 pub mod progress;
+pub mod serve;
 pub mod snapshot;

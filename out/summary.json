@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "total_nodes": 1430178,
+  "rows": [
+    {
+      "name": "system / JSArrayBufferData",
+      "count": 663,
+      "self_size_sum_bytes": 56947302
+    },
+    {
+      "name": "",
+      "count": 49589,
+      "self_size_sum_bytes": 10942640
+    },
+    {
+      "name": "(script line ends)",
+      "count": 4265,
+      "self_size_sum_bytes": 8188496
+    },
+    {
+      "name": "native_bind",
+      "count": 162167,
+      "self_size_sum_bytes": 7784016
+    },
+    {
+      "name": "(object elements)",
+      "count": 65197,
+      "self_size_sum_bytes": 7424560
+    },
+    {
+      "name": "(object properties)",
+      "count": 17767,
+      "self_size_sum_bytes": 6524592
+    },
+    {
+      "name": "import zod, { z } from 'zod';\nimport { LoggerFactory } from '@sobo-gen3v1/soboweb-logger';\nimport { BaseError as BaseError$1 } from 'make-error-cause';\nimport dayjs from 'dayjs';\nimport { uuid } from '@sobo-gen3v1/soboweb-utils';\n\nfunction _define_property$l(obj, key, value) {\n    if (key in obj) {\n        Object.defineProperty(obj, key, {\n            value: value,\n            enumerable: true,\n            configurable: true,\n            writable: true\n        });\n    } else {\n        obj[key] = value;\n    }\n    return obj;\n}\nclass DefaultErrorResponder {\n    info(message) {\n        this.logger.info(message);\n    }\n    warn(message) {\n        this.logger.warn(message);\n    }\n    error(message, error) {\n        this.logger.error(message, error);\n    }\n    critical(message, error) {\n        this.logger.fatal(message, error);\n    }\n    constructor(name){\n        _define_property$l(this, \"logger\", void 0);\n        this.logger = LoggerFactory.getLogger(name);\n    }\n}\n\nfunction _define_property$k(obj, key, value) {",
+      "count": 3,
+      "self_size_sum_bytes": 5795768
+    },
+    {
+      "name": "Object",
+      "count": 96272,
+      "self_size_sum_bytes": 4532360
+    },
+    {
+      "name": "system / WeakArrayList",
+      "count": 10407,
+      "self_size_sum_bytes": 3438192
+    },
+    {
+      "name": "system / Map",
+      "count": 47147,
+      "self_size_sum_bytes": 3394584
+    },
+    {
+      "name": "(function () {\n\n  var utils = /*#__PURE__*/Object.freeze({\n    __proto__: null,\n    get addThousandsSep () { return addThousandsSep; },\n    get addslashes () { return addslashes; },\n    get arrayToIndex () { return arrayToIndex; },\n    get clamp () { return clamp; },\n    get cleanNumericString () { return cleanNumericString; },\n    get contains () { return contains; },\n    get copyElements () { return copyElements; },\n    get countValues () { return countValues; },\n    get createBuffer () { return createBuffer; },\n    get default () { return utils; },\n    get defaults () { return defaults; },\n    get difference () { return difference; },\n    get endsWith () { return endsWith; },\n    get every () { return every; },\n    get expandoBuffer () { return expandoBuffer; },\n    get extend () { return extend$1; },\n    get extendBuffer () { return extendBuffer; },\n    get find () { return find; },\n    get findMedian () { return findMedian; },\n    get findQuantile () { return findQuantile; },\n    get findRankByValue () {",
+      "count": 1,
+      "self_size_sum_bytes": 2997520
+    },
+    {
+      "name": "system / BytecodeArray",
+      "count": 10416,
+      "self_size_sum_bytes": 2655568
+    },
+    {
+      "name": "system / DescriptorArray",
+      "count": 13963,
+      "self_size_sum_bytes": 2621928
+    },
+    {
+      "name": "system / ScopeInfo",
+      "count": 21594,
+      "self_size_sum_bytes": 2499808
+    },
+    {
+      "name": "(code relocation info)",
+      "count": 11894,
+      "self_size_sum_bytes": 2450416
+    },
+    {
+      "name": "system / FeedbackVector",
+      "count": 8592,
+      "self_size_sum_bytes": 2412560
+    },
+    {
+      "name": "Array",
+      "count": 72941,
+      "self_size_sum_bytes": 2353312
+    },
+    {
+      "name": "system / Context",
+      "count": 41024,
+      "self_size_sum_bytes": 2205984
+    },
+    {
+      "name": "system / TrustedByteArray",
+      "count": 23299,
+      "self_size_sum_bytes": 2075424
+    },
+    {
+      "name": "(code deopt data)",
+      "count": 4511,
+      "self_size_sum_bytes": 1988400
+    },
+    {
+      "name": "system / TrustedFixedArray",
+      "count": 3002,
+      "self_size_sum_bytes": 1920016
+    },
+    {
+      "name": "mutation ImportMultipleData($_TSOBOMeta: [ReqGyomuCommonTsoboMeta!]!, $_TSOBOMetaOption: ImportOption, $_TGISDataGeosobo: [ReqGyomuCommonTgisDataGeosobo!]!, $_TGISDataGeosoboOption: ImportOption, $_TGISData: [ReqGyomuCommonTgisData!]!, $_TGISDataOption: ImportOption) {\n  gyomu {\n    common {\n      TSOBOMeta {\n        import(list: $_TSOBOMeta, option: $_TSOBOMetaOption)\n      }\n      TGISDataGeosobo {\n        import(list: $_TGISDataGeosobo, option: $_TGISDataGeosoboOption)\n      }\n      TGISData {\n        import(list: $_TGISData, option: $_TGISDataOption)\n      }\n    }\n  }\n}\n",
+      "count": 3001,
+      "self_size_sum_bytes": 1800600
+    },
+    {
+      "name": "(concatenated string)",
+      "count": 56093,
+      "self_size_sum_bytes": 1794976
+    },
+    {
+      "name": "import { SoboMetaSchema, GisDataService, AccountService, DisasterManager, DisasterService, AuthorizationService, LayerService, LayerManager, ForumManager, ForumService, GisDataTypeManager, GisDataTypeService, TransactionService, GisDataManager, ShareLinkService, AuthorizationManager, UIFavoriteSetService, UIRecommendedSetService, DkuraManager, DkuraService, IDManagerAccountSchema, ProvisionOperationTypeSchema, DisasterAutoIdRuleSchema, DisasterSchema, SoboMetaRegistrationTypeSchema, ChannelSchema, LegendSchema, RenderingStyleSchema, SoboPropertySchema, DisEstimationResultSchema, GisDataSchema, SupportEstimationResultSchema, MasterUILayerTemplateSchema, MasterUILayerSchema, ShareLinkSchema, GisDataMetaEventSchema } from '@sobo-gen3v1/soboweb-domain';\nimport intoStream from 'into-stream';\nimport { isNativeError } from 'node:util/types';\nimport z$1, { z } from 'zod';\nimport { LoggerFactory } from '@sobo-gen3v1/soboweb-logger';\nimport Stream, { Readable, PassThrough } from 'stream';\nimport { AccountRepository, Ac",
+      "count": 1,
+      "self_size_sum_bytes": 1514256
+    },
+    {
+      "name": "system / PropertyArray",
+      "count": 26114,
+      "self_size_sum_bytes": 1504240
+    },
+    {
+      "name": "system / WeakFixedArray",
+      "count": 14302,
+      "self_size_sum_bytes": 1351664
+    },
+    {
+      "name": "system / FeedbackCell",
+      "count": 54268,
+      "self_size_sum_bytes": 1302432
+    },
+    {
+      "name": "'use strict';\n\nObject.defineProperty(exports, '__esModule', { value: true });\n\n/* Polyfill service v3.13.0\n * For detailed credits and licence information see http://github.com/financial-times/polyfill-service\n *\n * - Array.prototype.fill, License: CC0 */\n\nif (!('fill' in Array.prototype)) {\n  Object.defineProperty(Array.prototype, 'fill', {\n    configurable: true,\n    value: function fill (value) {\n      if (this === undefined || this === null) {\n        throw new TypeError(this + ' is not an object')\n      }\n\n      var arrayLike = Object(this);\n\n      var length = Math.max(Math.min(arrayLike.length, 9007199254740991), 0) || 0;\n\n      var relativeStart = 1 in arguments ? parseInt(Number(arguments[1]), 10) || 0 : 0;\n\n      relativeStart = relativeStart < 0 ? Math.max(length + relativeStart, 0) : Math.min(relativeStart, length);\n\n      var relativeEnd = 2 in arguments && arguments[2] !== undefined ? parseInt(Number(arguments[2]), 10) || 0 : length;\n\n      relativeEnd = relativeEnd < 0 ? Math.max(length + argum",
+      "count": 2,
+      "self_size_sum_bytes": 1282960
+    },
+    {
+      "name": "import { ExtError, NetErrors } from '@sobo-gen3v1/soboweb-domain';\nimport get from 'lodash.get';\nimport isEmpty from 'lodash.isempty';\nimport { CombinedError, createClient, fetchExchange, gql } from 'urql';\nimport 'lodash.mapkeys';\nimport { retryExchange } from '@urql/exchange-retry';\n\n/**\n * snake case to camel case\n * Object fields SHOULD be converted to camel case\n * key SHOULD be converted to camel case\n */ const noNeedConvertField = [\n    '__typename',\n    '_id',\n    '_and',\n    '_or',\n    '_sbw_code',\n    '_sbw_value',\n    '_sbw_uuid',\n    '_sbw_value_type',\n    '_sbw_mapdata',\n    '_sbw_property_order',\n    '_sbw_table',\n    '_sbw_documents',\n    '_sbw_media',\n    '_sbw_link',\n    'RUITemplateBaseLayers',\n    'RUIBaseLayers'\n];\n/**\n *  snake case to camel case\n * Object fields that SHOULD NOT  be converted to camel case\n * key SHOULD be converted to camel case\n */ const keepOriginalCase = [\n    'hash_tags',\n    'data_transformer',\n    'property_mapping'\n];\n/**\n * camel case to snake case\n * Object fiel",
+      "count": 2,
+      "self_size_sum_bytes": 1269968
+    },
+    {
+      "name": "(constant pool)",
+      "count": 11103,
+      "self_size_sum_bytes": 1100808
+    },
+    {
+      "name": "(BASELINE instruction stream)",
+      "count": 1483,
+      "self_size_sum_bytes": 1066624
+    },
+    {
+      "name": "system / UncompiledDataWithoutPreparseData",
+      "count": 39690,
+      "self_size_sum_bytes": 952560
+    },
+    {
+      "name": "(shared function info)",
+      "count": 11986,
+      "self_size_sum_bytes": 767104
+    },
+    {
+      "name": "import { ExtError, NetErrors } from '@sobo-gen3v1/soboweb-domain';\nimport get from 'lodash.get';\nimport isEmpty from 'lodash.isempty';\nimport { CombinedError, createClient, fetchExchange, gql } from 'urql';\nimport 'lodash.mapkeys';\nimport { retryExchange } from '@urql/exchange-retry';\n\n/**\n * snake case to camel case\n * Object fields SHOULD be converted to camel case\n * key SHOULD be converted to camel case\n */ const noNeedConvertField = [\n    '__typename',\n    '_id',\n    '_and',\n    '_or',\n    '_set',\n    '_sbw_code',\n    '_sbw_value',\n    '_sbw_uuid',\n    '_sbw_value_type',\n    '_sbw_mapdata',\n    '_sbw_property_order',\n    '_sbw_table',\n    '_sbw_documents',\n    '_sbw_media',\n    '_sbw_link',\n    'RUITemplateBaseLayers',\n    'RUIBaseLayers'\n];\n/**\n *  snake case to camel case\n * Object fields that SHOULD NOT  be converted to camel case\n * key SHOULD be converted to camel case\n */ const keepOriginalCase = [\n    'hash_tags',\n    'data_transformer',\n    'property_mapping'\n];\n/**\n * camel case to snake case\n *",
+      "count": 1,
+      "self_size_sum_bytes": 650592
+    },
+    {
+      "name": "(function(f){if(typeof exports===\"object\"&&typeof module!==\"undefined\"){module.exports=f()}else if(typeof define===\"function\"&&define.amd){define([],f)}else{var g;if(typeof window!==\"undefined\"){g=window}else if(typeof global!==\"undefined\"){g=global}else if(typeof self!==\"undefined\"){g=self}else{g=this}g.jsonata = f()}})(function(){var define,module,exports;return (function(){function r(e,n,t){function o(i,f){if(!n[i]){if(!e[i]){var c=\"function\"==typeof require&&require;if(!f&&c)return c(i,!0);if(u)return u(i,!0);var a=new Error(\"Cannot find module '\"+i+\"'\");throw a.code=\"MODULE_NOT_FOUND\",a}var p=n[i]={exports:{}};e[i][0].call(p.exports,function(r){var n=e[i][1][r];return o(n||r)},p,p.exports,r,e,n,t)}return n[i].exports}for(var u=\"function\"==typeof require&&require,i=0;i<t.length;i++)o(t[i]);return o}return r})()({1:[function(require,module,exports){\n/**\n * © Copyright IBM Corp. 2018 All Rights Reserved\n *   Project name: JSONata\n *   This project is licensed under the MIT License, see LICENSE\n */\n\nconst ut",
+      "count": 1,
+      "self_size_sum_bytes": 585632
+    },
+    {
+      "name": "(function webpackUniversalModuleDefinition(root, factory) {\n/* istanbul ignore next */\n\tif(typeof exports === 'object' && typeof module === 'object')\n\t\tmodule.exports = factory();\n\telse if(typeof define === 'function' && define.amd)\n\t\tdefine([], factory);\n/* istanbul ignore next */\n\telse if(typeof exports === 'object')\n\t\texports[\"esprima\"] = factory();\n\telse\n\t\troot[\"esprima\"] = factory();\n})(this, function() {\nreturn /******/ (function(modules) { // webpackBootstrap\n/******/ \t// The module cache\n/******/ \tvar installedModules = {};\n\n/******/ \t// The require function\n/******/ \tfunction __webpack_require__(moduleId) {\n\n/******/ \t\t// Check if module is in cache\n/* istanbul ignore if */\n/******/ \t\tif(installedModules[moduleId])\n/******/ \t\t\treturn installedModules[moduleId].exports;\n\n/******/ \t\t// Create a new module (and put it into the cache)\n/******/ \t\tvar module = installedModules[moduleId] = {\n/******/ \t\t\texports: {},\n/******/ \t\t\tid: moduleId,\n/******/ \t\t\tloaded: false\n/******/ \t\t};\n\n/******/ \t\t// Execute the",
+      "count": 1,
+      "self_size_sum_bytes": 567144
+    },
+    {
+      "name": "/**\n * @license\n * Lodash <https://lodash.com/>\n * Copyright OpenJS Foundation and other contributors <https://openjsf.org/>\n * Released under MIT license <https://lodash.com/license>\n * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>\n * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors\n */\n;(function() {\n\n  /** Used as a safe reference for `undefined` in pre-ES5 environments. */\n  var undefined;\n\n  /** Used as the semantic version number. */\n  var VERSION = '4.17.23';\n\n  /** Used as the size to enable large array optimizations. */\n  var LARGE_ARRAY_SIZE = 200;\n\n  /** Error message constants. */\n  var CORE_ERROR_TEXT = 'Unsupported core-js use. Try https://npms.io/search?q=ponyfill.',\n      FUNC_ERROR_TEXT = 'Expected a function',\n      INVALID_TEMPL_VAR_ERROR_TEXT = 'Invalid `variable` option passed into `_.template`';\n\n  /** Used to stand-in for `undefined` hash values. */\n  var HASH_UNDEFINED = '__lodash_hash_undefined__';\n\n  /** Used as the maximum memoize cache",
+      "count": 1,
+      "self_size_sum_bytes": 545288
+    },
+    {
+      "name": "LOG",
+      "count": 8118,
+      "self_size_sum_bytes": 519512
+    },
+    {
+      "name": "'use strict';\n\nObject.defineProperty(exports, '__esModule', { value: true });\n\n// these aren't really private, but nor are they really useful to document\n\n/**\n * @private\n */\nclass LuxonError extends Error {}\n\n/**\n * @private\n */\nclass InvalidDateTimeError extends LuxonError {\n  constructor(reason) {\n    super(`Invalid DateTime: ${reason.toMessage()}`);\n  }\n}\n\n/**\n * @private\n */\nclass InvalidIntervalError extends LuxonError {\n  constructor(reason) {\n    super(`Invalid Interval: ${reason.toMessage()}`);\n  }\n}\n\n/**\n * @private\n */\nclass InvalidDurationError extends LuxonError {\n  constructor(reason) {\n    super(`Invalid Duration: ${reason.toMessage()}`);\n  }\n}\n\n/**\n * @private\n */\nclass ConflictingSpecificationError extends LuxonError {}\n\n/**\n * @private\n */\nclass InvalidUnitError extends LuxonError {\n  constructor(unit) {\n    super(`Invalid unit ${unit}`);\n  }\n}\n\n/**\n * @private\n */\nclass InvalidArgumentError extends LuxonError {}\n\n/**\n * @private\n */\nclass ZoneIsAbstractError extends LuxonError {\n  construct",
+      "count": 1,
+      "self_size_sum_bytes": 508960
+    },
+    {
+      "name": "(sliced string)",
+      "count": 15396,
+      "self_size_sum_bytes": 492672
+    },
+    {
+      "name": "system / ObjectBoilerplateDescription",
+      "count": 6079,
+      "self_size_sum_bytes": 463312
+    },
+    {
+      "name": "system / LoadHandler",
+      "count": 13859,
+      "self_size_sum_bytes": 454792
+    },
+    {
+      "name": "// Copyright Joyent, Inc. and other Node contributors.\n//\n// Permission is hereby granted, free of charge, to any person obtaining a\n// copy of this software and associated documentation files (the\n// \"Software\"), to deal in the Software without restriction, including\n// without limitation the rights to use, copy, modify, merge, publish,\n// distribute, sublicense, and/or sell copies of the Software, and to permit\n// persons to whom the Software is furnished to do so, subject to the\n// following conditions:\n//\n// The above copyright notice and this permission notice shall be included\n// in all copies or substantial portions of the Software.\n//\n// THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS\n// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF\n// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN\n// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,\n// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR\n// OTHERWI",
+      "count": 71,
+      "self_size_sum_bytes": 443056
+    },
+    {
+      "name": "Generator",
+      "count": 4829,
+      "self_size_sum_bytes": 435904
+    },
+    {
+      "name": "(context local names)",
+      "count": 64,
+      "self_size_sum_bytes": 434688
+    },
+    {
+      "name": "get",
+      "count": 6786,
+      "self_size_sum_bytes": 431112
+    },
+    {
+      "name": "system / SourceTextModuleInfoEntry",
+      "count": 6480,
+      "self_size_sum_bytes": 414720
+    },
+    {
+      "name": "system / FeedbackMetadata",
+      "count": 10044,
+      "self_size_sum_bytes": 394560
+    },
+    {
+      "name": "ZodString",
+      "count": 1694,
+      "self_size_sum_bytes": 392136
+    },
+    {
+      "name": "validate",
+      "count": 6890,
+      "self_size_sum_bytes": 386920
+    }
+  ]
+}

@@ -1,15 +1,24 @@
 use std::fmt::Write as _;
+use std::path::Path;
 
 use serde::Serialize;
 
-use crate::analysis::summary::{SummaryResult, SummaryRow};
+use crate::analysis::summary::SummaryResult;
 use crate::error::SnapshotError;
 
 #[derive(Debug, Serialize)]
 struct SummaryJson<'a> {
     version: u32,
     total_nodes: usize,
-    rows: &'a [SummaryRow],
+    rows: Vec<SummaryRowJson<'a>>,
+}
+
+#[derive(Debug, Serialize)]
+struct SummaryRowJson<'a> {
+    name: &'a str,
+    count: u64,
+    #[serde(rename = "self_size_sum_bytes")]
+    self_size_sum_bytes: i64,
 }
 
 pub fn format_markdown(result: &SummaryResult) -> String {
@@ -18,7 +27,7 @@ pub fn format_markdown(result: &SummaryResult) -> String {
     let _ = writeln!(output, "");
     let _ = writeln!(output, "- Total nodes: {}", result.total_nodes);
     let _ = writeln!(output, "");
-    let _ = writeln!(output, "| Constructor | Count | Self Size Sum |");
+    let _ = writeln!(output, "| Constructor | Count | Self Size Sum (bytes) |");
     let _ = writeln!(output, "| --- | ---: | ---: |");
     for row in &result.rows {
         let name = if row.name.is_empty() {
@@ -38,17 +47,26 @@ pub fn format_markdown(result: &SummaryResult) -> String {
 }
 
 pub fn format_json(result: &SummaryResult) -> Result<String, SnapshotError> {
+    let rows = result
+        .rows
+        .iter()
+        .map(|row| SummaryRowJson {
+            name: row.name.as_str(),
+            count: row.count,
+            self_size_sum_bytes: row.self_size_sum,
+        })
+        .collect::<Vec<_>>();
     let payload = SummaryJson {
         version: 1,
         total_nodes: result.total_nodes,
-        rows: &result.rows,
+        rows,
     };
     serde_json::to_string_pretty(&payload).map_err(SnapshotError::Json)
 }
 
 pub fn format_csv(result: &SummaryResult) -> String {
     let mut output = String::new();
-    output.push_str("constructor,count,self_size_sum\n");
+    output.push_str("constructor,count,self_size_sum_bytes\n");
     for row in &result.rows {
         output.push('"');
         output.push_str(&row.name.replace('"', "\"\""));
@@ -59,6 +77,54 @@ pub fn format_csv(result: &SummaryResult) -> String {
         output.push_str(&row.self_size_sum.to_string());
         output.push('\n');
     }
+    output
+}
+
+pub fn format_html(result: &SummaryResult, source_path: &Path) -> String {
+    let mut output = String::new();
+    let title = "HeapSnapshot Summary";
+    let file_label = escape_html_inline(&source_path.display().to_string());
+
+    let _ = writeln!(
+        output,
+        "<!doctype html><html><head><meta charset=\"utf-8\"><title>{title}</title><style>{}</style></head><body>",
+        base_styles()
+    );
+    let _ = writeln!(output, "<h1>{title}</h1>");
+    let _ = writeln!(output, "<p><strong>File:</strong> {file_label}</p>");
+    let _ = writeln!(
+        output,
+        "<p><strong>Total nodes:</strong> {}</p>",
+        result.total_nodes
+    );
+    let _ = writeln!(
+        output,
+        "<table><thead><tr><th>Constructor</th><th>Count</th><th>Self Size Sum (bytes)</th></tr></thead><tbody>"
+    );
+    for row in &result.rows {
+        let display_name = if row.name.is_empty() {
+            format_empty_name(&result.empty_name_types)
+        } else {
+            row.name.clone()
+        };
+        let name_cell = if row.name.is_empty() {
+            escape_html_inline(&display_name)
+        } else {
+            let name_html = escape_html_inline(&display_name);
+            name_html
+        };
+        let _ = writeln!(
+            output,
+            "<tr><td>{}</td><td>{}</td><td>{}</td></tr>",
+            name_cell, row.count, row.self_size_sum
+        );
+    }
+    let _ = writeln!(output, "</tbody></table>");
+    let _ = writeln!(
+        output,
+        "<p class=\"note\">This HTML is a static report. Run <code>heapsnap detail</code> manually for per-constructor details.</p>"
+    );
+    let _ = writeln!(output, "</body></html>");
     output
 }
 
@@ -162,6 +228,10 @@ fn escape_html_inline(value: &str) -> String {
     escaped = escaped.replace('\r', "");
     escaped = escaped.replace('\n', "<br>");
     escaped
+}
+
+fn base_styles() -> &'static str {
+    "body{font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;margin:24px;color:#111}table{border-collapse:collapse;width:100%;margin-top:12px}th,td{border:1px solid #ddd;padding:8px;vertical-align:top}th{text-align:left;background:#f6f6f6}tr:nth-child(even){background:#fafafa}.note{margin-top:16px;color:#444;font-size:0.9em}"
 }
 
 fn format_empty_name(types: &[crate::analysis::summary::EmptyTypeSummary]) -> String {

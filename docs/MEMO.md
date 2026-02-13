@@ -114,3 +114,23 @@ Markdown テーブルやリストの可読性が落ちる。
 
 ### 備考
 - 関連コード: `src/output/summary.rs`, `src/output/retainers.rs`
+
+---
+
+## 2026-02-13: detail の集計・並び順・分布仕様メモ
+
+### 背景
+detail コマンドで表示する retainers / outgoing edges / shallow size 分布の
+並び順と区切りはスナップショットに依存しない固定仕様が必要。
+
+### 内容 / 観察結果
+- retainers は `from_node` の `self_size` 降順で上位 N を表示する
+- outgoing edges は `to_node` の `self_size` 降順で上位 N を表示する
+- shallow size 分布は固定バケットで集計する  
+  `0`, `1-31`, `32-127`, `128-511`, `512-2047`, `2048-8191`, `8192-32767`, `32768+`
+
+### 気になる点 / TODO
+- バケット境界や並び順は UI の要望に合わせて見直す余地がある
+
+### 備考
+- 関連コード: `src/analysis/detail.rs`, `src/output/detail.rs`
