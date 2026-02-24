@@ -12,7 +12,7 @@ pub struct DiffOptions {
     pub contains: Option<String>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct DiffRow {
     pub name: String,
     pub count_a: u64,
@@ -23,7 +23,7 @@ pub struct DiffRow {
     pub self_size_sum_delta: i64,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct DiffResult {
     pub total_nodes_a: usize,
     pub total_nodes_b: usize,

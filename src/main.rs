@@ -101,11 +101,11 @@ struct BuildArgs {
 
 #[derive(Args, Debug)]
 struct DiffArgs {
-    /// Snapshot A
-    file_a: PathBuf,
+    /// Before snapshot
+    before: PathBuf,
 
-    /// Snapshot B
-    file_b: PathBuf,
+    /// After snapshot
+    after: PathBuf,
 
     /// Show top N constructors
     #[arg(long, default_value_t = 50)]
@@ -473,11 +473,11 @@ fn run_diff(
 ) -> Result<(), error::SnapshotError> {
     let started = std::time::Instant::now();
     let options_a = parser::ReadOptions::new(progress, cancel.clone());
-    let snapshot_a = parser::read_snapshot_file(&args.file_a, options_a)?;
+    let snapshot_a = parser::read_snapshot_file(&args.before, options_a)?;
     let parse_a_done = std::time::Instant::now();
 
     let options_b = parser::ReadOptions::new(progress, cancel);
-    let snapshot_b = parser::read_snapshot_file(&args.file_b, options_b)?;
+    let snapshot_b = parser::read_snapshot_file(&args.after, options_b)?;
     let parse_b_done = std::time::Instant::now();
 
     if verbose {
@@ -574,6 +574,7 @@ fn run_dominator(
         analysis::dominator::DominatorOptions {
             max_depth: args.max_depth,
             cancel,
+            progress: None,
         },
     )?;
     let dom_done = std::time::Instant::now();

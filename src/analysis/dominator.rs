@@ -1,19 +1,45 @@
+use std::sync::mpsc::Sender;
+
 use crate::analysis::retainers::find_roots;
 use crate::cancel::CancelToken;
 use crate::error::SnapshotError;
 use crate::snapshot::SnapshotRaw;
 
-#[derive(Debug)]
 pub struct DominatorOptions {
     pub max_depth: usize,
     pub cancel: CancelToken,
+    pub progress: Option<Sender<DominatorProgress>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DominatorResult {
     pub target: usize,
     pub roots: Vec<usize>,
     pub chain: Vec<usize>,
+}
+
+#[derive(Debug, Clone)]
+pub struct DominatorIndex {
+    pub roots: Vec<usize>,
+    pub idom: Vec<Option<usize>>,
+}
+
+#[derive(Debug, Clone)]
+pub enum DominatorPhase {
+    BuildGraph,
+    ReversePostorder,
+    ComputeIdom,
+    Done,
+}
+
+#[derive(Debug, Clone)]
+pub struct DominatorProgress {
+    pub phase: DominatorPhase,
+    pub nodes_done: u64,
+    pub nodes_total: u64,
+    pub edges_done: u64,
+    pub edges_total: u64,
+    pub idom_iteration: u64,
 }
 
 pub fn dominator_chain(
@@ -21,19 +47,99 @@ pub fn dominator_chain(
     target: usize,
     options: DominatorOptions,
 ) -> Result<DominatorResult, SnapshotError> {
-    let roots = find_roots(snapshot)?;
-    let (succs, preds) = build_graph(snapshot)?;
-    let (rpo, rpo_index) = reverse_postorder(&succs, &roots);
-    let idom = compute_idom(&rpo, &rpo_index, &preds, &roots, &options.cancel)?;
+    let index = compute_dominator_index(snapshot, options.cancel.clone(), options.progress)?;
+    dominator_chain_from_index(&index, target, options.max_depth, options.cancel)
+}
 
+pub fn compute_dominator_index(
+    snapshot: &SnapshotRaw,
+    cancel: CancelToken,
+    progress: Option<Sender<DominatorProgress>>,
+) -> Result<DominatorIndex, SnapshotError> {
+    let roots = find_roots(snapshot)?;
+    let node_total = snapshot.node_count() as u64;
+    let edge_total = snapshot.edge_count() as u64;
+
+    let (succs, preds) = build_graph(snapshot, progress.as_ref(), node_total, edge_total)?;
+    if cancel.is_cancelled() {
+        return Err(SnapshotError::Cancelled);
+    }
+
+    let n = succs.len();
+    let super_root = n;
+
+    let mut succs_ext = succs;
+    succs_ext.push(Vec::new());
+    for &root in &roots {
+        if root < n {
+            succs_ext[super_root].push(root);
+        }
+    }
+
+    let mut preds_ext = preds;
+    preds_ext.push(Vec::new());
+    for &root in &roots {
+        if root < n {
+            preds_ext[root].push(super_root);
+        }
+    }
+
+    let lt = lengauer_tarjan(
+        &succs_ext,
+        &preds_ext,
+        super_root,
+        &cancel,
+        progress.as_ref(),
+        node_total,
+        edge_total,
+    )?;
+
+    let mut idom = vec![None; n];
+    for node in 0..n {
+        if lt.dfs_num[node] == 0 {
+            continue;
+        }
+        let dom = lt.idom[node];
+        if dom == usize::MAX {
+            continue;
+        }
+        if dom == super_root {
+            idom[node] = Some(node);
+        } else if dom < n {
+            idom[node] = Some(dom);
+        }
+    }
+
+    emit_progress(
+        progress.as_ref(),
+        DominatorProgress {
+            phase: DominatorPhase::Done,
+            nodes_done: node_total,
+            nodes_total: node_total,
+            edges_done: edge_total,
+            edges_total: edge_total,
+            idom_iteration: 0,
+        },
+    );
+
+    Ok(DominatorIndex { roots, idom })
+}
+
+pub fn dominator_chain_from_index(
+    index: &DominatorIndex,
+    target: usize,
+    max_depth: usize,
+    cancel: CancelToken,
+) -> Result<DominatorResult, SnapshotError> {
     let mut chain = Vec::new();
     let mut current = target;
-    for _ in 0..=options.max_depth {
-        if options.cancel.is_cancelled() {
+
+    for _ in 0..=max_depth {
+        if cancel.is_cancelled() {
             return Err(SnapshotError::Cancelled);
         }
         chain.push(current);
-        let next = match idom.get(current).copied().flatten() {
+        let next = match index.idom.get(current).copied().flatten() {
             Some(value) => value,
             None => break,
         };
@@ -52,19 +158,36 @@ pub fn dominator_chain(
     chain.reverse();
     Ok(DominatorResult {
         target,
-        roots,
+        roots: index.roots.clone(),
         chain,
     })
 }
 
 fn build_graph(
     snapshot: &SnapshotRaw,
+    progress: Option<&Sender<DominatorProgress>>,
+    nodes_total: u64,
+    edges_total: u64,
 ) -> Result<(Vec<Vec<usize>>, Vec<Vec<usize>>), SnapshotError> {
     let node_count = snapshot.node_count();
     let mut succs = vec![Vec::new(); node_count];
     let mut preds = vec![Vec::new(); node_count];
 
+    emit_progress(
+        progress,
+        DominatorProgress {
+            phase: DominatorPhase::BuildGraph,
+            nodes_done: 0,
+            nodes_total,
+            edges_done: 0,
+            edges_total,
+            idom_iteration: 0,
+        },
+    );
+
     let edge_offsets = compute_edge_offsets(snapshot)?;
+    let mut processed_edges = 0u64;
+
     for (node_index, start_edge) in edge_offsets.iter().enumerate() {
         let node = snapshot
             .node_view(node_index)
@@ -94,112 +217,218 @@ fn build_graph(
             succs[node_index].push(to_node);
             preds[to_node].push(node_index);
         }
+
+        processed_edges = processed_edges.saturating_add(edge_count as u64);
+        if node_index % 1024 == 0 || node_index + 1 == node_count {
+            emit_progress(
+                progress,
+                DominatorProgress {
+                    phase: DominatorPhase::BuildGraph,
+                    nodes_done: (node_index + 1) as u64,
+                    nodes_total,
+                    edges_done: processed_edges,
+                    edges_total,
+                    idom_iteration: 0,
+                },
+            );
+        }
     }
 
     Ok((succs, preds))
 }
 
-fn reverse_postorder(succs: &[Vec<usize>], roots: &[usize]) -> (Vec<usize>, Vec<usize>) {
-    let node_count = succs.len();
-    let mut visited = vec![false; node_count];
-    let mut postorder = Vec::new();
-
-    for &root in roots {
-        if root >= node_count || visited[root] {
-            continue;
-        }
-        let mut stack: Vec<(usize, usize)> = Vec::new();
-        stack.push((root, 0));
-        visited[root] = true;
-
-        while let Some((node, idx)) = stack.pop() {
-            if idx < succs[node].len() {
-                stack.push((node, idx + 1));
-                let next = succs[node][idx];
-                if next < node_count && !visited[next] {
-                    visited[next] = true;
-                    stack.push((next, 0));
-                }
-            } else {
-                postorder.push(node);
-            }
-        }
-    }
-
-    postorder.reverse();
-    let mut index = vec![usize::MAX; node_count];
-    for (i, node) in postorder.iter().enumerate() {
-        index[*node] = i;
-    }
-    (postorder, index)
+struct LtState {
+    dfs_num: Vec<usize>,
+    idom: Vec<usize>,
 }
 
-fn compute_idom(
-    rpo: &[usize],
-    rpo_index: &[usize],
+fn lengauer_tarjan(
+    succs: &[Vec<usize>],
     preds: &[Vec<usize>],
-    roots: &[usize],
+    super_root: usize,
     cancel: &CancelToken,
-) -> Result<Vec<Option<usize>>, SnapshotError> {
-    let node_count = preds.len();
-    let mut idom = vec![None; node_count];
+    progress: Option<&Sender<DominatorProgress>>,
+    nodes_total: u64,
+    edges_total: u64,
+) -> Result<LtState, SnapshotError> {
+    let n = succs.len();
+    let mut semi = vec![usize::MAX; n];
+    let mut parent = vec![usize::MAX; n];
+    let mut ancestor = vec![usize::MAX; n];
+    let mut label: Vec<usize> = (0..n).collect();
+    let mut dfs_num = vec![0usize; n];
+    let mut vertex = vec![usize::MAX; n + 1];
 
-    for &root in roots {
-        if root < node_count {
-            idom[root] = Some(root);
-        }
-    }
+    emit_progress(
+        progress,
+        DominatorProgress {
+            phase: DominatorPhase::ReversePostorder,
+            nodes_done: 0,
+            nodes_total,
+            edges_done: edges_total,
+            edges_total,
+            idom_iteration: 0,
+        },
+    );
 
-    if rpo.is_empty() {
-        return Ok(idom);
-    }
+    let mut time = 0usize;
+    time += 1;
+    dfs_num[super_root] = time;
+    semi[super_root] = time;
+    vertex[time] = super_root;
+    parent[super_root] = super_root;
 
-    let mut changed = true;
-    while changed {
+    let mut stack: Vec<(usize, usize)> = vec![(super_root, 0)];
+    while let Some((node, idx)) = stack.pop() {
         if cancel.is_cancelled() {
             return Err(SnapshotError::Cancelled);
         }
-        changed = false;
-        for &node in rpo {
-            if roots.contains(&node) {
+        if idx < succs[node].len() {
+            stack.push((node, idx + 1));
+            let next = succs[node][idx];
+            if dfs_num[next] == 0 {
+                time += 1;
+                dfs_num[next] = time;
+                semi[next] = time;
+                vertex[time] = next;
+                parent[next] = node;
+                stack.push((next, 0));
+                if time % 2048 == 0 {
+                    emit_progress(
+                        progress,
+                        DominatorProgress {
+                            phase: DominatorPhase::ReversePostorder,
+                            nodes_done: time as u64,
+                            nodes_total,
+                            edges_done: edges_total,
+                            edges_total,
+                            idom_iteration: 0,
+                        },
+                    );
+                }
+            }
+        }
+    }
+
+    let reachable = time;
+    emit_progress(
+        progress,
+        DominatorProgress {
+            phase: DominatorPhase::ReversePostorder,
+            nodes_done: reachable as u64,
+            nodes_total,
+            edges_done: edges_total,
+            edges_total,
+            idom_iteration: 0,
+        },
+    );
+
+    let mut idom = vec![usize::MAX; n];
+    let mut bucket: Vec<Vec<usize>> = vec![Vec::new(); n];
+
+    emit_progress(
+        progress,
+        DominatorProgress {
+            phase: DominatorPhase::ComputeIdom,
+            nodes_done: 0,
+            nodes_total: reachable.saturating_sub(1) as u64,
+            edges_done: edges_total,
+            edges_total,
+            idom_iteration: 0,
+        },
+    );
+
+    for i in (2..=reachable).rev() {
+        if cancel.is_cancelled() {
+            return Err(SnapshotError::Cancelled);
+        }
+
+        let w = vertex[i];
+        for &v in &preds[w] {
+            if dfs_num[v] == 0 {
                 continue;
             }
-            let mut new_idom = None;
-            for &pred in &preds[node] {
-                if idom[pred].is_none() {
-                    continue;
-                }
-                new_idom = Some(match new_idom {
-                    None => pred,
-                    Some(current) => intersect(pred, current, rpo_index, &idom),
-                });
+            let u = eval(v, &mut ancestor, &mut label, &semi);
+            if semi[u] < semi[w] {
+                semi[w] = semi[u];
             }
+        }
 
-            if new_idom.is_some() && idom[node] != new_idom {
-                idom[node] = new_idom;
-                changed = true;
+        let semiv = vertex[semi[w]];
+        if semiv < bucket.len() {
+            bucket[semiv].push(w);
+        }
+
+        link(parent[w], w, &mut ancestor);
+        let pw = parent[w];
+        if pw < bucket.len() {
+            let mut drained = Vec::new();
+            std::mem::swap(&mut drained, &mut bucket[pw]);
+            for v in drained {
+                let u = eval(v, &mut ancestor, &mut label, &semi);
+                if semi[u] < semi[v] {
+                    idom[v] = u;
+                } else {
+                    idom[v] = pw;
+                }
             }
+        }
+
+        let done = (reachable - i + 1) as u64;
+        if done % 1024 == 0 || i == 2 {
+            emit_progress(
+                progress,
+                DominatorProgress {
+                    phase: DominatorPhase::ComputeIdom,
+                    nodes_done: done,
+                    nodes_total: reachable.saturating_sub(1) as u64,
+                    edges_done: edges_total,
+                    edges_total,
+                    idom_iteration: 1,
+                },
+            );
         }
     }
 
-    Ok(idom)
+    for i in 2..=reachable {
+        let w = vertex[i];
+        if idom[w] != vertex[semi[w]] {
+            let parent_idom = idom[w];
+            if parent_idom != usize::MAX {
+                idom[w] = idom[parent_idom];
+            }
+        }
+    }
+    idom[super_root] = super_root;
+
+    Ok(LtState { dfs_num, idom })
 }
 
-fn intersect(
-    mut finger1: usize,
-    mut finger2: usize,
-    rpo_index: &[usize],
-    idom: &[Option<usize>],
-) -> usize {
-    while finger1 != finger2 {
-        while rpo_index[finger1] < rpo_index[finger2] {
-            finger1 = idom[finger1].unwrap_or(finger1);
-        }
-        while rpo_index[finger2] < rpo_index[finger1] {
-            finger2 = idom[finger2].unwrap_or(finger2);
-        }
+fn link(parent: usize, node: usize, ancestor: &mut [usize]) {
+    ancestor[node] = parent;
+}
+
+fn eval(v: usize, ancestor: &mut [usize], label: &mut [usize], semi: &[usize]) -> usize {
+    if ancestor[v] == usize::MAX {
+        return label[v];
     }
-    finger1
+
+    let mut path = Vec::new();
+    let mut cur = v;
+    while ancestor[cur] != usize::MAX && ancestor[ancestor[cur]] != usize::MAX {
+        path.push(cur);
+        cur = ancestor[cur];
+    }
+
+    while let Some(node) = path.pop() {
+        let parent = ancestor[node];
+        if semi[label[parent]] < semi[label[node]] {
+            label[node] = label[parent];
+        }
+        ancestor[node] = ancestor[parent];
+    }
+
+    label[v]
 }
 
 fn compute_edge_offsets(snapshot: &SnapshotRaw) -> Result<Vec<usize>, SnapshotError> {
@@ -233,6 +462,12 @@ fn compute_edge_offsets(snapshot: &SnapshotRaw) -> Result<Vec<usize>, SnapshotEr
     Ok(offsets)
 }
 
+fn emit_progress(progress: Option<&Sender<DominatorProgress>>, update: DominatorProgress) {
+    if let Some(tx) = progress {
+        let _ = tx.send(update);
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -254,6 +489,7 @@ mod tests {
             DominatorOptions {
                 max_depth: 10,
                 cancel: CancelToken::new(),
+                progress: None,
             },
         )
         .expect("dominator");
