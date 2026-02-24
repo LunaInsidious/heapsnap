@@ -195,13 +195,27 @@
   - 完了条件: `/retainers?id=...` が 200 で HTML を返す
   - 完了条件: 表示中の constructor/name から `detail --name` 相当（`/detail?name=...`）へ遷移できる
 - [x] `diff` の HTML を HTTP で返す
-  - 完了条件: `/diff?file_a=...&file_b=...` が 200 で HTML を返す
+  - 完了条件: `/diff?before=...&after=...` が 200 で HTML を返す
   - 完了条件: Constructor から `detail --name` 相当（`/detail?name=...`）へ遷移できる
+- [x] `index` に diff への導線を追加
+  - 完了条件: `/` に Diff 画面へのリンクが表示される
+  - 完了条件: リンク先で比較対象ファイルを選択するフォームが表示される
+- [x] `diff` の比較対象を `input type="file"` で選択可能にする
+  - 完了条件: `serve` 起動時に指定した `.heapsnapshot` を基準（A）として固定し、UI 選択ファイルを比較対象（B）として受け取れる
+  - 完了条件: ファイル選択後に `serve` 指定ファイルと選択ファイルの diff 結果が表示される
+  - 完了条件: ファイル未選択・不正入力時に次の操作が分かるエラーを表示する
+- [x] `diff` upload の一時ファイルを `serve` 停止時に掃除する
+  - 完了条件: `serve` 実行中に作成した `$TMPDIR/heapsnap-serve/` 配下の一時ファイルを終了時に削除する
+- [x] `diff` upload で同一内容ファイルを重複保存しない
+  - 完了条件: 同一プロセス中で同一内容の upload は同じ一時ファイルパスを再利用する
+  - 完了条件: fingerprint 再利用と停止時掃除のユニットテストを追加し、挙動を固定する
 - [x] `dominator` の HTML を HTTP で返す
   - 完了条件: `/dominator?id=...` が 200 で HTML を返す
   - 完了条件: 表示中の constructor/name から `detail --name` 相当（`/detail?name=...`）へ遷移できる
 - [x] `serve` のテスト追加
   - 完了条件: 主要ルートが 200 を返す
+- [x] `serve` の Summary/Detail/Diff で self size 系表示単位を切り替え可能にする
+  - 完了条件: `size_unit` クエリで `bytes`/`KiB`/`MiB`/`GiB` を選択でき、表と集計表示に反映される
 - [x] `--format html` の廃止方針を適用
   - 完了条件: `summary`/`retainers`/`diff`/`dominator`/`detail` の `--format html` を削除する
   - 完了条件: HTML は `serve` から提供し、CLI は md/json/csv のみを受け付ける

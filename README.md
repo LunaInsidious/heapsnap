@@ -82,16 +82,21 @@ heapsnap detail app.heapsnapshot --id 12345 --format json --top-retainers 10 --t
 heapsnap serve app.heapsnapshot --port 7878
 ```
 
+指定ポートが使用中の場合は、`7879`, `7880`, ... のように `+1` で自動再試行して起動します。
+
 開いた後の主な URL:
 - `http://127.0.0.1:7878/summary`
 - `http://127.0.0.1:7878/detail?name=FooObject`
 - `http://127.0.0.1:7878/detail?id=12345`
 - `http://127.0.0.1:7878/retainers?id=12345`
 - `http://127.0.0.1:7878/dominator?id=12345`
-- `http://127.0.0.1:7878/diff?file_a=fixtures/a.heapsnapshot&file_b=fixtures/b.heapsnapshot`
+- `http://127.0.0.1:7878/diff`（ブラウザで比較対象 `.heapsnapshot` を選択）
+- `http://127.0.0.1:7878/diff?before=fixtures/a.heapsnapshot&after=fixtures/b.heapsnapshot`（既存クエリ指定）
 
 `/summary` `/detail` `/retainers` `/diff` `/dominator` 画面では `skip` / `limit` をフォーム（number + select）で変更できます。
 クエリパラメータを直接編集する方法も利用できます（例: `/summary?top=100&skip=200&limit=100`, `/detail?name=FooObject&skip=200&limit=100`）。
+`/dominator` は初回アクセス時に計算中画面を返し、SSE で進捗更新して完了後に結果を表示します。
+同一ブラウザセッションで条件変更して Apply すると、前の計算はキャンセルされます。
 
 ## Directory Layout
 

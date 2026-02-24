@@ -134,3 +134,70 @@ detail コマンドで表示する retainers / outgoing edges / shallow size 分
 
 ### 備考
 - 関連コード: `src/analysis/detail.rs`, `src/output/detail.rs`
+
+---
+
+## 2026-02-19: serve diff の file upload 経路メモ
+
+### 背景
+`heapsnap serve <file>` 起動後に、index から diff へ遷移し、
+ブラウザの `input type="file"` で比較対象を選択したい要件が追加された。
+
+### 内容 / 観察結果
+- `GET /diff` はアップロードフォームを表示する
+- `POST /diff` は `multipart/form-data` を受け取り、`after` フィールドのファイルを解析する
+- アップロードされた内容は一時ファイル（`$TMPDIR/heapsnap-serve/`）に保存し、
+  `before=<serve起動時ファイル>` と `after=<一時ファイル>` で既存 diff 描画処理を再利用する
+- ブラウザ画面には upload 進捗（%）を表示し、upload 完了後は解析中メッセージを表示する
+  （解析そのものはサーバ側同期処理のため、件数ベースの厳密な進捗率は未提供）
+- upload された `after` ファイルはフィルタ再適用（skip/limit/search/top）で再利用するため
+  即時削除せず、`serve` 停止時に一括掃除する
+- `/diff` は `before` の起動時 snapshot 再利用・`after` snapshot のパスキャッシュ・
+  diff結果キャッシュ（before/after/top/search）を追加し、再解析時間を短縮した
+
+### 気になる点 / TODO
+- 一時ファイルの掃除戦略（TTL / 明示削除）の整理は今後の改善余地
+
+### 備考
+- 関連コード: `src/serve.rs`
+
+---
+
+## 2026-02-19: serve の Ctrl-C 応答改善メモ
+
+### 背景
+`heapsnap serve` 実行中に Ctrl-C で終了できる時とできない時があった。
+
+### 内容 / 観察結果
+- 接続処理中の `read` がブロッキングすると、キャンセルフラグを即時確認できない
+- `serve` 内の一部重い処理（diff/retainers/dominator）で `CancelToken::new()` を使っており、Ctrl-C が処理に伝播しない
+- `ServerContext` に cancel token を保持し、read timeout + ループ内キャンセル確認を追加した
+- diff/retainers/dominator の処理に `context.cancel` を渡すよう統一した
+
+### 備考
+- 関連コード: `src/serve.rs`, `src/cancel.rs`
+
+---
+
+## 2026-02-19: serve dominator の初回表示遅延対策メモ
+
+### 背景
+`/dominator` 初回アクセス時に計算が重く、画面が返ってこない体感があった。
+
+### 内容 / 観察結果
+- 初回アクセスは同期計算を行わず、バックグラウンドジョブを開始して
+  「calculating」画面を即時返すようにした
+- 進捗は SSE (`/dominator/events`) で配信し、完了イベントで画面更新する
+- 同一 session で再 Apply 時は旧ジョブを cancel して新ジョブを開始する
+- 進捗表示は経過時間ベースではなく、解析処理で実際に走査した node/edge 数を使う
+- `id -> node_index` インデックスを起動時に構築し、`id` 検索の全走査を避けた
+- `/dominator` 表示時は URL に `session` を固定し、ブラウザ reload で別ジョブが増殖しないようにした
+- 同一 session で新条件を Apply した時は旧ジョブを cancel し、ジョブマップから削除する
+- SSE (`/dominator/events`) は接続を長く保持するため、サーバ接続処理をリクエストごとスレッド化して
+  1 接続で accept ループ全体が詰まる問題を回避した
+- Dominator の中核アルゴリズムは Cooper から Lengauer-Tarjan へ変更した
+- `serve` は初回 dominator 計算で得た index（roots + idom）をキャッシュし、
+  2回目以降は chain 抽出のみ実行する
+
+### 備考
+- 関連コード: `src/serve.rs`, `src/analysis/dominator.rs`
